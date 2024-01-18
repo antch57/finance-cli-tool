@@ -21,14 +21,25 @@ class BudgetHandler:
         except mysql.connector.Error as err:
             print(f'Something went wrong: {err}')
 
+    def get_category_id(self, category):
+        try:
+            query = "SELECT id FROM Categories WHERE name=%s AND user_id=%s;"
+            self.cursor.execute(query, (category, self.user_id))
+            result = self.cursor.fetchone()
+            if result is not None:
+                return result[0]
+            else:
+                print(f'Category {category} does not exist')
+                return None
+        except mysql.connector.Error as err:
+            print(f'Something went wrong: {err}')
+
     def create_user(self):
         try:
             # check for existing user
-            query = "SELECT id FROM Users WHERE username = %s;"
-            self.cursor.execute(query, (self.user,))
-            result = self.cursor.fetchone()
+            user_id = self.get_user_id()
 
-            if result is None:
+            if user_id is None:
                 query = "INSERT INTO Users (username) VALUES (%s);"
                 self.cursor.execute(query, (self.user,))
                 self.connection.commit()
@@ -41,18 +52,14 @@ class BudgetHandler:
 
     def set_category_budget(self, category, amount):
         try:
-            # First, check if the category exists
-            query = "SELECT id FROM Categories WHERE name=%s AND user_id=%s;"
-            self.cursor.execute(query, (category, self.user_id))
-            result = self.cursor.fetchone()
+            category_id = self.get_category_id(category)
 
-            if result is None:
+            if category_id is None:
                 # If the category doesn't exist, create it
                 query = "INSERT INTO Categories (name, budget, user_id) VALUES (%s, %s, %s);"
                 self.cursor.execute(query, (category, amount, self.user_id))
             else:
                 # If the category exists, update its budget
-                category_id = result[0]
                 query = "UPDATE Categories SET budget=%s WHERE id=%s;"
                 self.cursor.execute(query, (amount, category_id))
 
@@ -100,16 +107,13 @@ class BudgetHandler:
 
     def drop_category(self, category):
         try:
-            # First, check if the category exists
-            query = "SELECT id FROM Categories WHERE name=%s AND user_id=%s;"
-            self.cursor.execute(query, (category, self.user_id))
-            result = self.cursor.fetchone()
+            category_id = self.get_category_id(category)
 
-            if result is None:
+            if category_id is None:
                 print(f'Category {category} does not exist')
+                return None
             else:
                 # If the category exists, delete it
-                category_id = result[0]
                 query = "DELETE FROM Categories WHERE id=%s;"
                 self.cursor.execute(query, (category_id,))
 
