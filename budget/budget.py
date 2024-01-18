@@ -6,9 +6,10 @@ from budget.budget_handler import BudgetHandler
 @click.argument('user')
 @click.option('--new-user', is_flag=True, help='Create a new user.')
 @click.option('--setup-budget', is_flag=True, help='Setup your monthly budget.')
+@click.option('--create-transaction', nargs=2, type=(str, float), help='Create a new transaction give category and amount.')
 @click.option('--drop-category', default=None, help='Drop a category from your budget.')
 @click.option('--check', is_flag=True, help='Check your budget.')
-def budget(user, check, new_user, setup_budget, drop_category):
+def budget(user, check, new_user, setup_budget, drop_category, create_transaction):
     """
     This command allows a USER to manage their budget.
 
@@ -23,7 +24,6 @@ def budget(user, check, new_user, setup_budget, drop_category):
         budget_handler = BudgetHandler(connection=connection, user=user)
 
         if new_user:
-            click.echo(f'Creating new user {user}')
             budget_handler.create_user()
 
         if setup_budget:
@@ -39,6 +39,11 @@ def budget(user, check, new_user, setup_budget, drop_category):
         if drop_category:
             click.echo(f'Dropping category {drop_category}')
             budget_handler.drop_category(drop_category)
+
+        if create_transaction:
+            category, amount = create_transaction
+            click.echo(f'Creating a new transaction of ${amount} in category {category}')
+            budget_handler.create_transaction(category, amount)
 
         if check:
             click.echo(f'Checking {user} budget')

@@ -1,4 +1,5 @@
 import mysql.connector
+from datetime import datetime
 from tabulate import tabulate
 
 class BudgetHandler:
@@ -43,10 +44,32 @@ class BudgetHandler:
                 query = "INSERT INTO Users (username) VALUES (%s);"
                 self.cursor.execute(query, (self.user,))
                 self.connection.commit()
-                self.user_id = self.get_user_id()
+                self.user_id = self.cursor.lastrowid
                 print(f'Created new User: {self.user}')
             else:
                 print(f'User {self.user} already exists')
+        except mysql.connector.Error as err:
+            print(f'Something went wrong: {err}')
+
+    def create_transaction(self, category, amount):
+        try:
+            category_id = self.get_category_id(category)
+
+            if category_id is None:
+                print(f'Category {category} does not exist')
+            else:
+                # If the category exists, create the transaction
+                date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Current date and time
+                query = """
+                    INSERT INTO Transactions (amount, date, category_id, user_id)
+                    VALUES (%s, %s, %s, %s);
+                """
+                self.cursor.execute(query, (amount, date, category_id, self.user_id))
+
+                self.connection.commit()
+
+                print(f'Created transaction of ${amount} in category {category} on {date}')
+
         except mysql.connector.Error as err:
             print(f'Something went wrong: {err}')
 
@@ -123,7 +146,3 @@ class BudgetHandler:
 
         except mysql.connector.Error as err:
             print(f'Something went wrong: {err}')
-
-
-
-
