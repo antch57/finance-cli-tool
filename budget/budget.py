@@ -28,13 +28,16 @@ def budget(user, check, new_user, setup_budget, drop_category, create_transactio
 
         if setup_budget:
             click.echo(f"Setting up {user}'s monthly budget")
+            categories = []
             while True:
                 category = click.prompt('Please enter a category name (or "exit" to stop)')
                 if category.lower() == 'exit':
                     break
 
                 amount = click.prompt('Please enter the budget amount for this category', type=float)
-                budget_handler.set_category_budget(category, amount)
+                categories.append((category, amount))
+
+            budget_handler.set_category_budget(categories)
 
         if drop_category:
             click.echo(f'Dropping category {drop_category}')

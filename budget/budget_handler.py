@@ -1,3 +1,4 @@
+from calendar import c
 import mysql.connector
 from datetime import datetime
 from tabulate import tabulate
@@ -73,18 +74,21 @@ class BudgetHandler:
         except mysql.connector.Error as err:
             print(f'Something went wrong: {err}')
 
-    def set_category_budget(self, category, amount):
+    def set_category_budget(self, categories):
         try:
-            category_id = self.get_category_id(category)
+            for category, amount in categories:
+                category_id = self.get_category_id(category)
 
-            if category_id is None:
-                # If the category doesn't exist, create it
-                query = "INSERT INTO Categories (name, budget, user_id) VALUES (%s, %s, %s);"
-                self.cursor.execute(query, (category, amount, self.user_id))
-            else:
-                # If the category exists, update its budget
-                query = "UPDATE Categories SET budget=%s WHERE id=%s;"
-                self.cursor.execute(query, (amount, category_id))
+                if category_id is None:
+                    # If the category doesn't exist, create it
+                    query = "INSERT INTO Categories (name, budget, user_id) VALUES (%s, %s, %s);"
+                    self.cursor.execute(query, (category, amount, self.user_id))
+                    self.connection.commit()
+
+                else:
+                    # If the category exists, update its budget
+                    query = "UPDATE Categories SET budget=%s WHERE id=%s;"
+                    self.cursor.execute(query, (amount, category_id))
 
             self.connection.commit()
 
