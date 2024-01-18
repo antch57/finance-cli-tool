@@ -1,4 +1,3 @@
-from calendar import c
 import mysql.connector
 from datetime import datetime
 from tabulate import tabulate
