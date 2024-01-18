@@ -98,6 +98,28 @@ class BudgetHandler:
         except mysql.connector.Error as err:
             print(f'Something went wrong: {err}')
 
+    def drop_category(self, category):
+        try:
+            # First, check if the category exists
+            query = "SELECT id FROM Categories WHERE name=%s AND user_id=%s;"
+            self.cursor.execute(query, (category, self.user_id))
+            result = self.cursor.fetchone()
+
+            if result is None:
+                print(f'Category {category} does not exist')
+            else:
+                # If the category exists, delete it
+                category_id = result[0]
+                query = "DELETE FROM Categories WHERE id=%s;"
+                self.cursor.execute(query, (category_id,))
+
+                self.connection.commit()
+
+                print(f'Dropped category {category}')
+
+        except mysql.connector.Error as err:
+            print(f'Something went wrong: {err}')
+
 
 
 
